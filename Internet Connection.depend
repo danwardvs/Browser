@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1409791275 source:c:\users\danward\documents\github\internet connection\internet connection\main.cpp
+	<iostream>
+	<allegro.h>
+	<alpng.h>
+	<string>
+	<sstream>
+	<iterator>
+	<algorithm>
+	<wininet.h>
+
