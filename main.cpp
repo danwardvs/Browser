@@ -1,18 +1,25 @@
-#include<iostream>
-#include<allegro.h>
-#include<alpng.h>
-#include<string>
+#include <string>
+#include <iostream>
+#include <allegro.h>
+#include <alpng.h>
 #include <sstream>
 #include <iterator>
 #include <algorithm>
-#include<wininet.h>
+#include <wininet.h>
+#include <vector>
 
 
 BITMAP* buffer;
 BITMAP* reload;
+BITMAP* cursor;
 
-char* weburl="http://motherfuckingwebsite.com";
+char* weburl="http://adsgames.net";
 char DataReceived[4096];
+
+bool getting_url=false;
+std::string  edittext;
+std::string::iterator iter;
+std::string url_from_adress_bar;
 
 FONT* font_12;
 FONT* f1;
@@ -29,7 +36,6 @@ void abort_on_error(const char *message){
 	 allegro_message("%s.\n %s\n", message, allegro_error);
 	 exit(-1);
 }
-
 
 void get_webpage(){
  HINTERNET connect = InternetOpen(weburl,INTERNET_OPEN_TYPE_PRECONFIG,NULL, NULL, 0);
@@ -60,25 +66,105 @@ void get_webpage(){
 }
 
 
+
+
+
+
+void get_url(){
+
+  //Name input
+  if(keypressed()){
+    int  newkey   = readkey();
+    char ASCII    = newkey & 0xff;
+    char scancode = newkey >> 8;
+
+    // a character key was pressed; add it to the string
+    if(ASCII >= 32 && ASCII <= 126 && edittext.length() < 25 && scancode != KEY_SPACE){
+      // add the new char
+      iter = edittext.insert(iter, ASCII);
+      // increment both the caret and the iterator
+      iter++;
+    }
+    // some other, "special" key was pressed; handle it here
+    else{
+      if(scancode == KEY_DEL){
+        if(iter != edittext.end()){
+          iter = edittext.erase(iter);
+        }
+      }
+      if(scancode == KEY_BACKSPACE){
+        if(iter != edittext.begin()){
+           iter--;
+           iter = edittext.erase(iter);
+        }
+      }
+      if(scancode == KEY_RIGHT){
+        if(iter != edittext.end()){
+          iter++;
+        }
+      }
+      if(scancode == KEY_LEFT){
+        if(iter != edittext.begin()){
+          iter--;
+        }
+      }
+      if(scancode == KEY_ENTER){
+       // url_from_adress_bar = "http://" + edittext.substr(0, edittext.size()-4);
+      //  get_webpage();
+        getting_url = false;
+      }
+    }
+  }
+}
+
+
+
+
+
 void update(){
 
     rectfill(buffer,0,0,1024,768,makecol(255,255,255));
     textprintf_ex(buffer,font,30,3,makecol(0,0,0),-1,"%s",weburl);
     hline(buffer,0,27,1024,makecol(0,0,0));
     draw_sprite(buffer,reload,0,0);
-    textprintf_ex(buffer,font,3,30,makecol(0,0,0),-1,"Data:%s",DataReceived);
+    textprintf_ex(buffer,font,3,30,makecol(0,0,0),-1,"%s",DataReceived);
+    if(key[KEY_G])getting_url=true;
+
+    if(getting_url){
+        get_url();
+    }
+    textprintf_centre_ex(buffer,font_12,30,3, makecol(0,0,0),-1,NULL);
+
+    //Input rectangle
+    rectfill(buffer, 28, 3, 400, 24, makecol(0,0,0));
+    rectfill(buffer, 30, 5, 398, 22, makecol(255,255,255));
+
+    // Output the string to the screen
+    textout_ex(buffer, font_12, edittext.c_str(), 30, 3, makecol(0,0,0), -1);
+
+    // Draw the caret
+    //vline(buffer, text_length(font_12, edittext.c_str()) + 30 - text_length(font_12,NULL) , 32, 50, makecol(0,0,0));
 
 
 
 
-
+    draw_sprite(buffer,cursor,mouse_x,mouse_y);
     draw_sprite(screen,buffer,0,0);
 }
+
+
+
+
+
+
 void setup(){
     buffer=create_bitmap(1024,768);
 
       if(!(reload = load_bitmap("reload.png",NULL))){
         abort_on_error( "Cannot find reload.png.\n Please check your files and try again.");
+    }
+    if(!(cursor= load_bitmap("cursor.png",NULL))){
+        abort_on_error( "Cannot find cursor.png.\n Please check your files and try again.");
     }
 
     if(!(f1 = load_font("font_12.pcx", NULL, NULL))){
@@ -107,7 +193,7 @@ void setup(){
 int main(){
 
 
-   //system("PAUSE");
+
   allegro_init();
   alpng_init();
   install_timer();
