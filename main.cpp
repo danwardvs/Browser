@@ -1,12 +1,7 @@
 #include <string>
-#include <iostream>
 #include <allegro.h>
 #include <alpng.h>
-#include <sstream>
-#include <iterator>
-#include <algorithm>
 #include <wininet.h>
-#include <vector>
 
 
 BITMAP* buffer;
@@ -16,7 +11,10 @@ BITMAP* cursor;
 char* weburl="http://adsgames.net/server/motd.html";
 char DataReceived[4096];
 
-bool getting_url=false;
+int error_codes;
+bool failed_to_connect=false;
+bool url_loaded=false;
+
 std::string  edittext;
 std::string::iterator iter;
 std::string url_from_adress_bar;
@@ -27,6 +25,13 @@ FONT* f2;
 FONT* f3;
 FONT* f4;
 FONT* f5;
+
+//Area clicked
+bool location_clicked(int min_x,int max_x,int min_y,int max_y){
+    if(mouse_x>min_x && mouse_x<max_x && mouse_y>min_y && mouse_y<max_y && mouse_b & 1 || mouse_x>min_x && mouse_x<max_x && mouse_y>min_y && mouse_y<max_y && joy[0].button[1].b)
+        return true;
+    else return false;
+}
 
 //A function that handles error messages
 void abort_on_error(const char *message){
@@ -49,8 +54,9 @@ void get_webpage(){
 
     if ( !OpenAddress ){
       DWORD ErrorNum = GetLastError();
-      //cout<<"Failed to open URL \nError No: "<<ErrorNum;
+      error_codes=ErrorNum;
       alert(NULL, NULL, "Failed to open URL.","&Continue", NULL, 'c', 0);
+      failed_to_connect=true;
       InternetCloseHandle(connect);
 
    }
@@ -58,11 +64,11 @@ void get_webpage(){
 
    DWORD NumberOfBytesRead = 0;
    while(InternetReadFile(OpenAddress, DataReceived, 4096, &NumberOfBytesRead) && NumberOfBytesRead ){
-           //cout << DataReceived;
    }
 
    InternetCloseHandle(OpenAddress);
    InternetCloseHandle(connect);
+   url_loaded=true;
 }
 
 
@@ -79,7 +85,16 @@ void update(){
     hline(buffer,0,27,1024,makecol(0,0,0));
     draw_sprite(buffer,reload,0,0);
     textprintf_ex(buffer,font,3,30,makecol(0,0,0),-1,"%s",DataReceived);
-
+    if(!url_loaded)
+        textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"Loading...");
+    if(failed_to_connect)
+        textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"URL Not Available.");
+    if(location_clicked(0,27,0,27)){
+        textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"Loading...");
+        draw_sprite(screen,buffer,0,0);
+        url_loaded=false;
+        get_webpage();
+    }
 
 
 
@@ -145,6 +160,7 @@ int main(){
 
   set_window_title("Browser");
   setup();
+  update();
   get_webpage();
 
     while(!key[KEY_ESC]){
