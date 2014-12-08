@@ -2,16 +2,23 @@
 #include <allegro.h>
 #include <alpng.h>
 #include <wininet.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
+using namespace std;
 
 BITMAP* buffer;
 BITMAP* reload;
 BITMAP* cursor;
 
-char* weburl="http://adsgames.net/server/motd.html";
+char* weburl="http://adsgames.net/server/browser/version.html";
 char DataReceived[4096];
 
-int error_codes;
+int local_version_number;
+int server_version_number;
+
+bool new_version=false;
 bool failed_to_connect=false;
 bool url_loaded=false;
 
@@ -42,11 +49,11 @@ void abort_on_error(const char *message){
 	 exit(-1);
 }
 
-void get_webpage(){
- HINTERNET connect = InternetOpen(weburl,INTERNET_OPEN_TYPE_PRECONFIG,NULL, NULL, 0);
+
+void get_webpage(char* newWeburl){
+    HINTERNET connect = InternetOpen(newWeburl,INTERNET_OPEN_TYPE_PRECONFIG,NULL, NULL, 0);
 
     if(!connect){
-      //cout<<"Connection Failed or Syntax error";
       alert(NULL, NULL, "Connection Failed or Syntax error.","&Continue", NULL, 'c', 0);
     }
 
@@ -54,7 +61,7 @@ void get_webpage(){
 
     if ( !OpenAddress ){
       DWORD ErrorNum = GetLastError();
-      error_codes=ErrorNum;
+
       alert(NULL, NULL, "Failed to open URL.","&Continue", NULL, 'c', 0);
       failed_to_connect=true;
       InternetCloseHandle(connect);
@@ -71,10 +78,23 @@ void get_webpage(){
    url_loaded=true;
 }
 
+void check_updates(){
+    textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"Checking for updates");
+    draw_sprite(screen,buffer,0,0);
+    get_webpage("http://adsgames.net/server/browser/version.html");
+    ifstream read("version.dat");
+	  read >> local_version_number;
+  	read.close();
+  	server_version_number=atoi(DataReceived);
+  	if(server_version_number>local_version_number){
+        new_version=true;
+        alert(NULL, NULL, "A new version of browser is available!","&Continue", NULL, 'c', 0);
 
-
-
-
+  	}else{
+        new_version=false;
+        alert(NULL, NULL, "You are running the newest version.","&Continue", NULL, 'c', 0);
+    }
+}
 
 
 
@@ -93,11 +113,15 @@ void update(){
         textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"Loading...");
         draw_sprite(screen,buffer,0,0);
         url_loaded=false;
-        get_webpage();
+        get_webpage(weburl);
     }
+    if(key[KEY_C])check_updates();
 
 
+    if(new_version)textprintf_ex(buffer,font,10,700,makecol(255,0,0),-1,"versionoin!");
 
+    textprintf_ex(buffer,font,10,600,makecol(255,0,0),-1,"Local %i",local_version_number);
+    textprintf_ex(buffer,font,10,700,makecol(255,0,0),-1,"Server %i", server_version_number);
 
 
     draw_sprite(buffer,cursor,mouse_x,mouse_y);
@@ -161,7 +185,8 @@ int main(){
   set_window_title("Browser");
   setup();
   update();
-  get_webpage();
+  get_webpage(weburl);
+
 
     while(!key[KEY_ESC]){
         update();
