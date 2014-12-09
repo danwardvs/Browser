@@ -79,7 +79,7 @@ void get_webpage(char* newWeburl){
 }
 
 void check_updates(){
-    textprintf_ex(buffer,font,10,740,makecol(255,0,0),-1,"Checking for updates");
+    textprintf_ex(buffer,font,10,720,makecol(255,0,0),-1,"Checking for updates");
     draw_sprite(screen,buffer,0,0);
     get_webpage("http://adsgames.net/server/browser/version.html");
     ifstream read("version.dat");
@@ -117,11 +117,8 @@ void update(){
     }
     if(key[KEY_C])check_updates();
 
-
-    if(new_version)textprintf_ex(buffer,font,10,700,makecol(255,0,0),-1,"versionoin!");
-
-    textprintf_ex(buffer,font,10,600,makecol(255,0,0),-1,"Local %i",local_version_number);
-    textprintf_ex(buffer,font,10,700,makecol(255,0,0),-1,"Server %i", server_version_number);
+    if(new_version)textprintf_ex(buffer,font,815,740,makecol(155,155,155),-1,"Version %i, %i is available.",local_version_number,server_version_number);
+    else textprintf_ex(buffer,font,940,740,makecol(155,155,155),-1,"Version %i", local_version_number);
 
 
     draw_sprite(buffer,cursor,mouse_x,mouse_y);
@@ -185,6 +182,7 @@ int main(){
   set_window_title("Browser");
   setup();
   update();
+  check_updates();
   get_webpage(weburl);
 
 
