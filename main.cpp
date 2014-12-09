@@ -89,6 +89,7 @@ void check_updates(){
   	if(server_version_number>local_version_number){
         new_version=true;
         alert(NULL, NULL, "A new version of browser is available!","&Continue", NULL, 'c', 0);
+        ShellExecute(NULL, "open", "http://www.adsgames.net", NULL, NULL, SW_SHOWNORMAL);
 
   	}else{
         new_version=false;

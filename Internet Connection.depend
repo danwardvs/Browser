@@ -9,14 +9,12 @@
 	<algorithm>
 	<wininet.h>
 
-1409953745 source:c:\users\danward\documents\github\internet connection\browser\main.cpp
+1418089894 source:c:\users\danward\documents\github\internet connection\browser\main.cpp
 	<string>
-	<iostream>
 	<allegro.h>
 	<alpng.h>
-	<sstream>
-	<iterator>
-	<algorithm>
 	<wininet.h>
-	<vector>
+	<iostream>
+	<fstream>
+	<sstream>
 
