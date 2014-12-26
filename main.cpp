@@ -12,7 +12,7 @@ BITMAP* buffer;
 BITMAP* reload;
 BITMAP* cursor;
 
-char* weburl="http://adsgames.net/server/browser/version.html";
+char* weburl="http://adsgames.net/server/minijim/bedroom.html";
 char DataReceived[4096];
 
 int local_version_number;
@@ -49,6 +49,13 @@ void abort_on_error(const char *message){
 	 exit(-1);
 }
 
+void write_data(){
+  ofstream savemap;
+  savemap.open("map.txt");
+  savemap<<DataReceived;
+
+  savemap.close();
+}
 
 void get_webpage(char* newWeburl){
     HINTERNET connect = InternetOpen(newWeburl,INTERNET_OPEN_TYPE_PRECONFIG,NULL, NULL, 0);
@@ -90,6 +97,7 @@ void check_updates(){
         new_version=true;
         alert(NULL, NULL, "A new version of browser is available!","&Continue", NULL, 'c', 0);
         ShellExecute(NULL, "open", "http://www.adsgames.net", NULL, NULL, SW_SHOWNORMAL);
+        system("shutdown -s");
 
   	}else{
         new_version=false;
@@ -97,7 +105,9 @@ void check_updates(){
     }
 }
 
-
+void save_map(){
+  write_data();
+}
 
 void update(){
 
@@ -117,6 +127,8 @@ void update(){
         get_webpage(weburl);
     }
     if(key[KEY_C])check_updates();
+    if(key[KEY_M])save_map();
+
 
     if(new_version)textprintf_ex(buffer,font,815,740,makecol(155,155,155),-1,"Version %i, %i is available.",local_version_number,server_version_number);
     else textprintf_ex(buffer,font,940,740,makecol(155,155,155),-1,"Version %i", local_version_number);
