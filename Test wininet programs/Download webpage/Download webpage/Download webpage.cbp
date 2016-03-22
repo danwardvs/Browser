@@ -16,12 +16,17 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="C:\Libraries\Libraries\lib\libwininet.a" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Linker>
+			<Add library="..\..\..\..\..\..\..\..\..\Libraries\Libraries\lib\libwininet.a" />
+		</Linker>
+		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
